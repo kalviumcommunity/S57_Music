@@ -11,43 +11,6 @@ app.get("/ping", (req, res) => {
 
 Mongoose();
 
-// Create authors
-const authors = [
-  { artist: "Artist1", songs: [] },
-  { artist: "Artist2", songs: [] },
-];
-
-Author.insertMany(authors)
-  .then((createdAuthors) => {
-    console.log("Authors created:", createdAuthors);
-
-    // Create songs
-    const songs = [
-      {
-        song: "Song1",
-        artist: createdAuthors[0]._id,
-        genre: "Genre1",
-        image: "image1.jpg",
-      },
-      {
-        song: "Song2",
-        artist: createdAuthors[1]._id,
-        genre: "Genre2",
-        image: "image2.jpg",
-      },
-    ];
-
-    Song.insertMany(songs)
-      .then((createdSongs) => {
-        console.log("Songs created:", createdSongs);
-      })
-      .catch((error) => {
-        console.error("Error creating songs:", error);
-      });
-  })
-  .catch((error) => {
-    console.error("Error creating authors:", error);
-  });
 app.listen(3000, () => {
   console.log("listening on port 3000");
 });
