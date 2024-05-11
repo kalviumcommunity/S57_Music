@@ -1,7 +1,7 @@
 import express, { response } from "express";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { User } from "../../model/model.js";
+import { User } from "../../model";
 
 const Authrouter = express.Router();
 
@@ -16,7 +16,7 @@ Authrouter.post("/signup", async (req, res) => {
     const passwords = await bcryptjs.hash(password, salt);
     const user = await User.create({ username, password: passwords, email });
     return res.json(user);
-  } catch (err) {
+  } catch (err: any) {
     console.log(err);
   }
 });
@@ -35,7 +35,7 @@ Authrouter.post("/signin", async (req, res) => {
     email: user.email,
     username: user.username,
   };
-  const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET, {
+  const token = await jwt.sign(tokenData, process.env.TOKEN_SECRET!, {
     expiresIn: "1hr",
   });
   res.cookie("token", token, { httpOnly: true });
@@ -50,7 +50,7 @@ const verify = (req) => {
     throw new Error("Authorization header missing or invalid");
   }
   const token = req.headers.authorization.split(" ")[1];
-  const verify = jwt.verify(token, process.env.TOKEN_SECRET);
+  const verify = jwt.verify(token, process.env.TOKEN_SECRET!);
   return verify.email;
 };
 Authrouter.get("/", async (req, res) => {

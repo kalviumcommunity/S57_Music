@@ -1,5 +1,5 @@
 import express from "express";
-import { Author } from "../../model/model.js";
+import { Author } from "../../model";
 
 const Singerrouter = express.Router();
 

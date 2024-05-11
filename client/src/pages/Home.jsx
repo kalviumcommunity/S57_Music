@@ -1,33 +1,16 @@
-import React from 'react';
-import { Create } from './Create';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 import { Input } from '../@/components/ui/input';
+import { Create } from './Create';
+import { Update } from './Update.tsx';
 
-// Dummy data for posts
-const dummyPosts = [
-  {
-    id: 1,
-    link: 'https://example.com',
-    image: 'https://example.com/image1.jpg',
-    song: 'Song 1',
-    singer: 'Singer 1',
-    genre: 'Genre 1'
-  },
-  {
-    id: 2,
-    link: 'https://example.com',
-    image: 'https://example.com/image2.jpg',
-    song: 'Song 2',
-    singer: 'Singer 2',
-    genre: 'Genre 2'
-  },
-
-];
 
 const Post = ({ link, image, song, singer, genre, onClick, id }) => (
-  <div className='flex flex-col border w-fit gap-x-3 p-3 rounded-2xl z-0'>
-    <div>
-      <img src={image} alt="" className='bg-slate-300 h-44 rounded-2xl object-contain' />
-    </div>
+  <div className='flex flex-col border w-fit gap-x-3 p-3 rounded-2xl  z-0'>
+    <Link to={link}>
+      <img src={image} alt="" className='bg-slate-300 h-44  rounded-2xl object-contain ' />
+    </Link>
 
     <div className='flex items-center justify-between pt-3'>
       <div className='flex-col'>
@@ -38,16 +21,53 @@ const Post = ({ link, image, song, singer, genre, onClick, id }) => (
         </div>
       </div>
       <button onClick={onClick} className='bg-purple-200 px-3 py-2 rounded-lg text-[12px]'>delete</button>
+      <Update id={id} />
     </div>
   </div>
 );
 
 const Home = () => {
+  const [data, setData] = useState([]);
+
+  const [searchInput, setSearchInput] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/song/songs');
+        const shuffledata = [...response.data.songs].sort(() => Math.random() - 0.5);
+        setData(shuffledata);
+        console.log(response.data)
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, [searchInput]);
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`http://localhost:3000/song/${id}`);
+      setData(data.filter(item => item._id !== id));
+    } catch (error) {
+      console.error('Error deleting data:', error);
+    }
+  };
+  const filteredData = data.filter(song => {
+    const searchText = searchInput.toLowerCase();
+    return (
+      (song.song?.toLowerCase().includes(searchText) || false) ||
+      (song.singer?.toLowerCase().includes(searchText) || false) ||
+      (song.genre?.toLowerCase().includes(searchText) || false)
+    );
+  });
+
+
   const Navbar = () => {
     return (
       <div className='w-full flex justify-center items-center p-2 gap-x-6 text-[15px] fixed bg-purple-50'>
         <Create />
-        <Input value={''} onChange={''} placeholder="Search..." />
+        <Input value={searchInput} onChange={e => setSearchInput(e.target.value)} placeholder="Search..." />
       </div>
     );
   };
@@ -56,17 +76,8 @@ const Home = () => {
     <div className='w-full h-fit p-1'>
       <Navbar />
       <div className='w-full h-full pt-20 flex flex-wrap justify-center gap-y-3 gap-x-3'>
-        {dummyPosts.map(post => (
-          <Post
-            key={post.id}
-            link={post.link}
-            image={post.image}
-            song={post.song}
-            singer={post.singer}
-            genre={post.genre}
-            onClick={() => { }}
-            id={post.id}
-          />
+        {filteredData.map(song => (
+          <Post key={song._id} link={song._id} image={song.image} song={song.song} singer={song.singer} genre={song.genre} onClick={() => { handleDelete(song._id) }} id={song._id} />
         ))}
       </div>
     </div>
